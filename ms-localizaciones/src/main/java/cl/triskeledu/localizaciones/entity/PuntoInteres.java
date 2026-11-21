@@ -17,6 +17,10 @@ public class PuntoInteres {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(length = 50)
+    @Builder.Default
+    private String codigo = "";
+
     @NotBlank(message = "El nombre del punto es obligatorio")
     @Column(nullable = false, length = 150)
     private String nombre;
@@ -24,6 +28,10 @@ public class PuntoInteres {
     @Column(columnDefinition = "TEXT")
     @Builder.Default
     private String descripcion = "";
+
+    @Column(length = 300)
+    @Builder.Default
+    private String direccion = "";
 
     @Column(nullable = false)
     private Double latitud;
@@ -43,4 +51,12 @@ public class PuntoInteres {
 
     @Column(length = 500)
     private String imagenUri;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer puntosRecompensa = 100;
+
+    @Column(length = 100)
+    @Builder.Default
+    private String qrEsperado = "";
 }

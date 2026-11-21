@@ -1,5 +1,6 @@
 package cl.triskeledu.premios.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,6 +21,7 @@ public class VisitaSelfieRequest {
 
     private Long capsulaId;
 
+    @NotBlank(message = "La fotografía selfie es obligatoria para validar la evidencia")
     private String rutaFotoSelfie;
 
     private String codigoQrEsperado;

@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
+import java.nio.charset.StandardCharsets;
+
 @Component
 @Slf4j
 public class LocalizacionesClient {
@@ -28,7 +30,14 @@ public class LocalizacionesClient {
                             .build())
                     .retrieve()
                     .onStatus(HttpStatusCode::isError, (req, res) -> {
-                        log.warn("Error validando QR '{}' en ms-localizaciones: {}", codigoQr, res.getStatusCode());
+                        String msg = "";
+                        try {
+                            msg = new String(res.getBody().readAllBytes(), StandardCharsets.UTF_8);
+                        } catch (Exception ignored) {}
+                        log.warn("Error validando QR '{}' en ms-localizaciones: {} - {}", codigoQr, res.getStatusCode(), msg);
+                        if (msg.contains("no se encuentra publicada")) {
+                            throw new IllegalArgumentException("La cápsula educativa no se encuentra publicada");
+                        }
                         throw new IllegalArgumentException("El código QR no corresponde a ninguna cápsula de Triskeledu");
                     })
                     .body(CapsulaResponse.class);
@@ -36,7 +45,7 @@ public class LocalizacionesClient {
             throw e;
         } catch (Exception e) {
             log.error("Fallo comunicación con ms-localizaciones al validar QR '{}': {}", codigoQr, e.getMessage());
-            throw new IllegalArgumentException("Error comunicando con servicio de localizaciones para validar QR");
+            throw new IllegalArgumentException("Error comunicando con servicio de localizaciones para validar QR: " + e.getMessage());
         }
     }
 }

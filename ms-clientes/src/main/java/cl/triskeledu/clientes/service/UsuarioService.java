@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -27,16 +29,27 @@ public class UsuarioService {
             throw new IllegalArgumentException("Este correo electrónico ya está registrado");
         }
 
+        String aliasFinal = request.getAliasFinal();
+        String institucionFinal = request.getInstitucion() != null && !request.getInstitucion().isBlank()
+                ? request.getInstitucion().trim() : "Triskeledu";
+        String avatarSeleccionadoFinal = request.getAvatarSeleccionado() != null && !request.getAvatarSeleccionado().isBlank()
+                ? request.getAvatarSeleccionado().trim() : "avatar_explorador_1";
+
+        Rol rolFinal = request.getRol() != null ? request.getRol() : Rol.CLIENTE;
+
         Usuario usuario = Usuario.builder()
-                .nombre(request.getNombre().trim())
-                .alias(request.getAlias().trim())
+                .nombre(request.getNombreFinal())
+                .alias(aliasFinal)
                 .correo(correoLimpio)
                 .telefono(request.getTelefono() != null ? request.getTelefono().trim() : "")
                 .direccion(request.getDireccion() != null ? request.getDireccion().trim() : "")
+                .institucion(institucionFinal)
                 .avatar(request.getAvatar() != null ? request.getAvatar() : 1)
+                .avatarSeleccionado(avatarSeleccionadoFinal)
                 .contrasena(PasswordUtils.crearHash(request.getContrasena()))
-                .rol(request.getRol() != null ? request.getRol() : Rol.CLIENTE)
+                .rol(rolFinal)
                 .puntosAcumulados(0)
+                .fechaRegistro(LocalDateTime.now())
                 .build();
 
         Usuario guardado = usuarioRepository.save(usuario);
@@ -98,8 +111,8 @@ public class UsuarioService {
             if (!PasswordUtils.verificarContrasena(request.getContrasenaActual(), usuario.getContrasena())) {
                 throw new IllegalArgumentException("La contraseña actual es incorrecta");
             }
-            if (request.getContrasenaNueva().length() < 6) {
-                throw new IllegalArgumentException("La nueva contraseña debe tener al menos 6 caracteres");
+            if (request.getContrasenaNueva().length() < 3) {
+                throw new IllegalArgumentException("La nueva contraseña debe tener al menos 3 caracteres");
             }
             usuario.setContrasena(PasswordUtils.crearHash(request.getContrasenaNueva()));
         }
@@ -119,6 +132,10 @@ public class UsuarioService {
     }
 
     public UsuarioResponse toResponse(Usuario u) {
+        String fecha = u.getFechaRegistro() != null
+                ? u.getFechaRegistro().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                : LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+
         return UsuarioResponse.builder()
                 .id(u.getId())
                 .nombre(u.getNombre())
@@ -126,9 +143,12 @@ public class UsuarioService {
                 .correo(u.getCorreo())
                 .telefono(u.getTelefono())
                 .direccion(u.getDireccion())
+                .institucion(u.getInstitucion() != null ? u.getInstitucion() : "Triskeledu")
                 .avatar(u.getAvatar())
+                .avatarSeleccionado(u.getAvatarSeleccionado() != null ? u.getAvatarSeleccionado() : "avatar_explorador_1")
                 .rol(u.getRol())
                 .puntosAcumulados(u.getPuntosAcumulados())
+                .fechaRegistro(fecha)
                 .tipoCuentaSistema(u.getTipoCuentaSistema())
                 .build();
     }

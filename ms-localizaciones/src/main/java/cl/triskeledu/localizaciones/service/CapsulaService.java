@@ -27,8 +27,14 @@ public class CapsulaService {
     }
 
     public Capsula validarQr(String codigoQr) {
-        return capsulaRepository.findByCodigoQr(codigoQr.trim())
+        Capsula capsula = capsulaRepository.findByCodigoQr(codigoQr.trim())
                 .orElseThrow(() -> new IllegalArgumentException("El código QR no corresponde a ninguna cápsula de Triskeledu"));
+
+        if (!"PUBLICADA".equalsIgnoreCase(capsula.getEstado())) {
+            throw new IllegalArgumentException("La cápsula educativa no se encuentra publicada");
+        }
+
+        return capsula;
     }
 
     @Transactional

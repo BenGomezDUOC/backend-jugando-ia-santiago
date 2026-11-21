@@ -41,10 +41,17 @@ public class GamificacionService {
         // 1. Validar usuario en ms-clientes
         UsuarioResponse usuario = clientesClient.obtenerUsuario(request.getUsuarioId());
 
-        // 2. Validar QR en ms-localizaciones
+        // 2. Validar QR en ms-localizaciones (verifica existencia y estado PUBLICADA)
         CapsulaResponse capsula = localizacionesClient.validarQr(request.getCodigoQr().trim());
 
-        // 3. Verificar si ya fue descubierto
+        // 3. Validar si el usuario seleccionó un punto turístico específico y coincide con el QR escaneado
+        if (request.getPuntoIdSeleccionado() != null && capsula.getPuntoId() != null) {
+            if (!capsula.getPuntoId().equals(request.getPuntoIdSeleccionado())) {
+                throw new IllegalArgumentException("El código QR escaneado pertenece a otro punto turístico, no al seleccionado.");
+            }
+        }
+
+        // 4. Verificar si ya fue descubierto
         boolean yaDescubierto = descubrimientoQrRepository.existsByUsuarioIdAndCapsulaId(usuario.getId(), capsula.getId());
 
         int puntosOtorgados = 0;
@@ -91,16 +98,30 @@ public class GamificacionService {
         // 1. Validar usuario en ms-clientes
         UsuarioResponse usuario = clientesClient.obtenerUsuario(request.getUsuarioId());
 
-        // 2. Validar que no haya visitado ya este punto
-        boolean yaVisitado = visitaRealizadaRepository.existsByUsuarioIdAndPuntoId(usuario.getId(), request.getPuntoId());
-        if (yaVisitado) {
-            throw new IllegalArgumentException("Ya has registrado tu visita en terreno a este punto turístico");
+        if (request.getRutaFotoSelfie() == null || request.getRutaFotoSelfie().isBlank()) {
+            throw new IllegalArgumentException("La fotografía selfie es obligatoria para validar la evidencia");
+        }
+
+        Long capsulaIdFinal = request.getCapsulaId() != null ? request.getCapsulaId() : 0L;
+
+        // 2. Validar que no haya registrado selfie para esta cápsula turística específica
+        boolean yaVisitado;
+        if (request.getCapsulaId() != null) {
+            yaVisitado = visitaRealizadaRepository.existsByUsuarioIdAndCapsulaId(usuario.getId(), request.getCapsulaId());
+            if (yaVisitado) {
+                throw new IllegalArgumentException("Ya has registrado tu selfie y validado la bonificación para esta cápsula educativa");
+            }
+        } else {
+            yaVisitado = visitaRealizadaRepository.existsByUsuarioIdAndPuntoId(usuario.getId(), request.getPuntoId());
+            if (yaVisitado) {
+                throw new IllegalArgumentException("Ya has registrado tu visita en terreno a este punto turístico");
+            }
         }
 
         VisitaRealizada visita = VisitaRealizada.builder()
                 .usuarioId(usuario.getId())
                 .puntoId(request.getPuntoId())
-                .capsulaId(request.getCapsulaId())
+                .capsulaId(capsulaIdFinal)
                 .rutaFotoSelfie(request.getRutaFotoSelfie())
                 .puntosGanados(100)
                 .fechaTimestamp(System.currentTimeMillis())

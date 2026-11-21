@@ -9,5 +9,6 @@ import java.util.List;
 @Repository
 public interface VisitaRealizadaRepository extends JpaRepository<VisitaRealizada, Long> {
     List<VisitaRealizada> findByUsuarioId(Long usuarioId);
+    boolean existsByUsuarioIdAndCapsulaId(Long usuarioId, Long capsulaId);
     boolean existsByUsuarioIdAndPuntoId(Long usuarioId, Long puntoId);
 }

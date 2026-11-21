@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "usuarios", indexes = {
     @Index(name = "index_usuarios_correo", columnList = "correo", unique = true),
@@ -27,9 +29,9 @@ public class Usuario {
     @Column(nullable = false, length = 100)
     private String nombre;
 
-    @NotBlank(message = "El alias es obligatorio")
-    @Column(nullable = false, length = 50)
-    private String alias;
+    @Column(nullable = false, length = 100)
+    @Builder.Default
+    private String alias = "";
 
     @NotBlank(message = "El correo es obligatorio")
     @Email(message = "Debe ser un correo electrónico válido")
@@ -44,9 +46,17 @@ public class Usuario {
     @Builder.Default
     private String direccion = "";
 
+    @Column(length = 100)
+    @Builder.Default
+    private String institucion = "Triskeledu";
+
     @Column(nullable = false)
     @Builder.Default
     private Integer avatar = 1;
+
+    @Column(length = 50)
+    @Builder.Default
+    private String avatarSeleccionado = "avatar_explorador_1";
 
     @NotBlank(message = "La contraseña es obligatoria")
     @Column(nullable = false, length = 255)
@@ -64,4 +74,8 @@ public class Usuario {
 
     @Column(length = 50, unique = true)
     private String tipoCuentaSistema;
+
+    @Column
+    @Builder.Default
+    private LocalDateTime fechaRegistro = LocalDateTime.now();
 }

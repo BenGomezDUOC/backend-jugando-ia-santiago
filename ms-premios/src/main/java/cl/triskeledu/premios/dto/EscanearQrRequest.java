@@ -1,5 +1,6 @@
 package cl.triskeledu.premios.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -18,4 +19,7 @@ public class EscanearQrRequest {
 
     @NotBlank(message = "El código QR es obligatorio")
     private String codigoQr;
+
+    @JsonAlias({"puntoId", "puntoIdSeleccionado"})
+    private Long puntoIdSeleccionado;
 }

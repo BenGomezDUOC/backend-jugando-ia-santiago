@@ -7,7 +7,8 @@ import lombok.*;
 @Table(name = "visitas", indexes = {
     @Index(name = "index_visitas_usuarioId", columnList = "usuarioId"),
     @Index(name = "index_visitas_puntoId", columnList = "puntoId"),
-    @Index(name = "index_visitas_usuario_punto", columnList = "usuarioId, puntoId", unique = true)
+    @Index(name = "index_visitas_capsulaId", columnList = "capsulaId"),
+    @Index(name = "index_visitas_usuario_capsula", columnList = "usuarioId, capsulaId", unique = true)
 })
 @Getter
 @Setter
@@ -26,9 +27,10 @@ public class VisitaRealizada {
     @Column(nullable = false)
     private Long puntoId;
 
+    @Column(nullable = false)
     private Long capsulaId;
 
-    @Column(length = 500)
+    @Column(length = 500, nullable = false)
     private String rutaFotoSelfie;
 
     @Column(nullable = false)

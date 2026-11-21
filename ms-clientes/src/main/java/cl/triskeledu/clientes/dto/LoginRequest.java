@@ -1,6 +1,6 @@
 package cl.triskeledu.clientes.dto;
 
-import jakarta.validation.constraints.Email;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class LoginRequest {
 
     @NotBlank(message = "El correo es obligatorio")
-    @Email(message = "Debe ser un correo electrónico válido")
+    @JsonAlias({"correoElectronico", "correo"})
     private String correo;
 
     @NotBlank(message = "La contraseña es obligatoria")

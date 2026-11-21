@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -31,8 +33,11 @@ public class DataSeeder implements CommandLineRunner {
                     .contrasena(PasswordUtils.crearHash("123"))
                     .rol(Rol.ADMINISTRADOR)
                     .tipoCuentaSistema("ADMIN_PRINCIPAL")
+                    .institucion("Triskeledu")
+                    .avatarSeleccionado("avatar_explorador_1")
                     .puntosAcumulados(0)
                     .avatar(1)
+                    .fechaRegistro(LocalDateTime.now())
                     .build();
             usuarioRepository.save(admin);
             log.info("Usuario Administrador precargado exitosamente en ms-clientes.");
@@ -52,8 +57,11 @@ public class DataSeeder implements CommandLineRunner {
                     .contrasena(PasswordUtils.crearHash("123"))
                     .rol(Rol.GENERADOR)
                     .tipoCuentaSistema("GENERADOR_PRINCIPAL")
+                    .institucion("Triskeledu")
+                    .avatarSeleccionado("avatar_explorador_2")
                     .puntosAcumulados(0)
                     .avatar(2)
+                    .fechaRegistro(LocalDateTime.now())
                     .build();
             usuarioRepository.save(gen);
             log.info("Usuario Generador de Contenido precargado exitosamente en ms-clientes.");
@@ -64,7 +72,7 @@ public class DataSeeder implements CommandLineRunner {
             });
         }
 
-        // 3. Cliente Demo (clave 123)
+        // 3. Cliente / Estudiante Demo (clave 123)
         if (!usuarioRepository.existsByCorreo("estudiante@triskeledu.cl")) {
             Usuario demo = Usuario.builder()
                     .nombre("Estudiante Demo")
@@ -72,8 +80,11 @@ public class DataSeeder implements CommandLineRunner {
                     .correo("estudiante@triskeledu.cl")
                     .contrasena(PasswordUtils.crearHash("123"))
                     .rol(Rol.CLIENTE)
+                    .institucion("Triskeledu")
+                    .avatarSeleccionado("avatar_explorador_1")
                     .puntosAcumulados(110)
                     .avatar(3)
+                    .fechaRegistro(LocalDateTime.now())
                     .build();
             usuarioRepository.save(demo);
             log.info("Usuario Cliente Demo precargado exitosamente en ms-clientes.");
