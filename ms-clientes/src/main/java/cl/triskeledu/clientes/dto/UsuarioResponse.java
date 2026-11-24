@@ -12,47 +12,51 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UsuarioResponse {
+
+    // Identificador único del usuario.
     private Long id;
 
+    // Datos personales.
     private String nombre;
+    private String alias;
+    private String correo;
+    private String telefono;
+    private String direccion;
+
+    // Avatar seleccionado por el usuario.
+    private Integer avatar;
+
+    // Rol asignado al usuario.
+    private Rol rol;
+
+    // Puntaje acumulado.
+    private Integer puntosAcumulados;
+
+    // Fecha de creación de la cuenta.
+    private String fechaRegistro;
+
+    // Identificación de cuentas internas del sistema.
+    private String tipoCuentaSistema;
+
 
     @JsonProperty("nombreCompleto")
     public String getNombreCompleto() {
         return nombre;
     }
 
-    private String alias;
-
-    private String correo;
-
     @JsonProperty("correoElectronico")
     public String getCorreoElectronico() {
         return correo;
     }
 
-    private String telefono;
-    private String direccion;
-
-    private Integer avatar;
-
-    @JsonProperty("avatarSeleccionado")
-    private String avatarSeleccionado;
-
-    @JsonProperty("institucion")
-    private String institucion;
-
-    private Rol rol;
-
-    private Integer puntosAcumulados;
-
+    // Nivel calculado a partir de los puntos acumulados.
     @JsonProperty("nivelActual")
     public Integer getNivelActual() {
-        int pts = puntosAcumulados != null ? puntosAcumulados : 0;
-        return (pts / 100) + 1;
+
+        int puntos = puntosAcumulados != null
+                ? Math.max(0, puntosAcumulados)
+                : 0;
+
+        return (puntos / 100) + 1;
     }
-
-    @JsonProperty("fechaRegistro")
-    private String fechaRegistro;
-
-    private String tipoCuentaSistema;
 }

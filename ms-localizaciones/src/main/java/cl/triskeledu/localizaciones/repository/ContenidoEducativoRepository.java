@@ -8,8 +8,19 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ContenidoEducativoRepository extends JpaRepository<ContenidoEducativo, Long> {
+public interface ContenidoEducativoRepository
+        extends JpaRepository<ContenidoEducativo, Long> {
+
     Optional<ContenidoEducativo> findByCodigoQr(String codigoQr);
+
     List<ContenidoEducativo> findByPuntoId(Long puntoId);
+
     List<ContenidoEducativo> findByEstado(String estado);
+
+    List<ContenidoEducativo> findByPuntoIdAndEstado(
+            Long puntoId,
+            String estado
+    );
+
+    boolean existsByPuntoId(Long puntoId);
 }

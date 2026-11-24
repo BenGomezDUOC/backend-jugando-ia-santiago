@@ -2,8 +2,10 @@ package cl.triskeledu.localizaciones.controller;
 
 import cl.triskeledu.localizaciones.entity.PuntoInteres;
 import cl.triskeledu.localizaciones.service.PuntoInteresService;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,29 +26,50 @@ public class PuntoInteresController {
 
     @GetMapping
     public ResponseEntity<List<PuntoInteres>> obtenerTodos() {
-        return ResponseEntity.ok(puntoInteresService.obtenerTodos());
+
+        return ResponseEntity.ok(
+                puntoInteresService.obtenerTodos()
+        );
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PuntoInteres> obtenerPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(puntoInteresService.obtenerPorId(id));
+    public ResponseEntity<PuntoInteres> obtenerPorId(
+            @PathVariable("id") Long id
+    ) {
+
+        return ResponseEntity.ok(
+                puntoInteresService.obtenerPorId(id)
+        );
     }
 
     @PostMapping
-    public ResponseEntity<PuntoInteres> crear(@Valid @RequestBody PuntoInteres punto) {
-        PuntoInteres guardado = puntoInteresService.guardar(punto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
+    public ResponseEntity<PuntoInteres> crear(
+            @Valid @RequestBody PuntoInteres punto
+    ) {
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(puntoInteresService.guardar(punto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PuntoInteres> actualizar(@PathVariable Long id, @Valid @RequestBody PuntoInteres punto) {
-        punto.setId(id);
-        return ResponseEntity.ok(puntoInteresService.guardar(punto));
+    public ResponseEntity<PuntoInteres> actualizar(
+            @PathVariable("id") Long id,
+            @Valid @RequestBody PuntoInteres punto
+    ) {
+
+        return ResponseEntity.ok(
+                puntoInteresService.actualizar(id, punto)
+        );
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminar(
+            @PathVariable("id") Long id
+    ) {
+
         puntoInteresService.eliminar(id);
+
         return ResponseEntity.noContent().build();
     }
 }
