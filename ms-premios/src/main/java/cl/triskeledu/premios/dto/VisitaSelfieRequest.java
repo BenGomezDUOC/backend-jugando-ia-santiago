@@ -1,7 +1,11 @@
+
 package cl.triskeledu.premios.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,16 +17,22 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class VisitaSelfieRequest {
 
-    @NotNull(message = "El usuarioId es obligatorio")
+    // Compatibilidad con el identificador de Android.
+    @Positive
     private Long usuarioId;
 
-    @NotNull(message = "El puntoId es obligatorio")
+    @NotNull(message = "El punto turístico es obligatorio")
+    @Positive
     private Long puntoId;
 
+    @NotNull(message = "La cápsula es obligatoria")
+    @Positive
     private Long capsulaId;
 
-    @NotBlank(message = "La fotografía selfie es obligatoria para validar la evidencia")
-    private String rutaFotoSelfie;
-
+    @NotBlank(message = "El código QR es obligatorio")
+    @Size(max = 500)
     private String codigoQrEsperado;
+
+    // La fotografía se enviará como archivo multipart.
+    // La ruta se genera en el backend.
 }

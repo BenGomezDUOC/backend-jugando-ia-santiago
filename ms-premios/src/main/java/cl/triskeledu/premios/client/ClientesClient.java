@@ -1,56 +1,106 @@
 package cl.triskeledu.premios.client;
 
+import cl.triskeledu.premios.dto.OperacionPuntosResponse;
 import cl.triskeledu.premios.dto.UsuarioResponse;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+
+import java.util.Map;
 
 @Component
-@Slf4j
 public class ClientesClient {
 
     private final RestClient restClient;
+    private final String claveInterna;
 
-    public ClientesClient(@Value("${app.services.clientes-url:http://localhost:8081}") String clientesUrl) {
+    public ClientesClient(
+            @Value("${app.services.clientes-url}") String clientesUrl,
+            @Value("${app.internal.premios-key}") String claveInterna
+    ) {
+
+        this.claveInterna = claveInterna;
+
+        SimpleClientHttpRequestFactory factory =
+                new SimpleClientHttpRequestFactory();
+
+        factory.setConnectTimeout(5000);
+        factory.setReadTimeout(10000);
+
         this.restClient = RestClient.builder()
                 .baseUrl(clientesUrl)
+                .requestFactory(factory)
                 .build();
     }
 
-    public UsuarioResponse obtenerUsuario(Long usuarioId) {
-        try {
-            return restClient.get()
-                    .uri("/api/clientes/usuarios/{id}", usuarioId)
-                    .retrieve()
-                    .onStatus(HttpStatusCode::isError, (req, res) -> {
-                        log.warn("Error consultando ms-clientes para usuario ID {}: {}", usuarioId, res.getStatusCode());
-                        throw new IllegalArgumentException("Usuario no encontrado o no disponible en ms-clientes");
-                    })
-                    .body(UsuarioResponse.class);
-        } catch (Exception e) {
-            log.error("Fallo comunicación con ms-clientes al obtener usuario {}: {}", usuarioId, e.getMessage());
-            throw new IllegalArgumentException("Usuario no encontrado en ms-clientes: " + e.getMessage());
+    // Consultar al usuario mediante su JWT.
+    public UsuarioResponse obtenerUsuario(
+            Long usuarioId,
+            String token
+    ) {
+
+        UsuarioResponse usuario = restClient.get()
+                .uri("/api/clientes/usuarios/{id}", usuarioId)
+                .headers(headers ->
+                        headers.setBearerAuth(token))
+                .retrieve()
+                .body(UsuarioResponse.class);
+
+        if (usuario == null
+                || !usuarioId.equals(usuario.getId())
+                || usuario.getPuntosAcumulados() == null) {
+
+            throw new RestClientException(
+                    "Respuesta inválida de ms-clientes"
+            );
         }
+
+        return usuario;
     }
 
-    public UsuarioResponse sumarPuntos(Long usuarioId, int puntos) {
-        try {
-            return restClient.put()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/api/clientes/usuarios/{id}/sumar-puntos")
-                            .queryParam("puntos", puntos)
-                            .build(usuarioId))
-                    .retrieve()
-                    .onStatus(HttpStatusCode::isError, (req, res) -> {
-                        log.warn("Error sumando puntos en ms-clientes para usuario {}: {}", usuarioId, res.getStatusCode());
-                        throw new IllegalArgumentException("No se pudieron sumar puntos en ms-clientes");
-                    })
-                    .body(UsuarioResponse.class);
-        } catch (Exception e) {
-            log.error("Fallo comunicación con ms-clientes al sumar puntos a usuario {}: {}", usuarioId, e.getMessage());
-            throw new IllegalArgumentException("Error al actualizar puntos del usuario: " + e.getMessage());
+    // Solicitar una acumulación segura de puntos.
+    public OperacionPuntosResponse registrarPuntos(
+            Long usuarioId,
+            String codigoOperacion,
+            int puntos,
+            String motivo
+    ) {
+
+        Map<String, Object> solicitud = Map.of(
+                "codigoOperacion", codigoOperacion,
+                "puntos", puntos,
+                "motivo", motivo
+        );
+
+        OperacionPuntosResponse respuesta = restClient.post()
+                .uri(
+                        "/api/interno/usuarios/{id}/puntos",
+                        usuarioId
+                )
+                .header("X-Internal-Key", claveInterna)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(solicitud)
+                .retrieve()
+                .body(OperacionPuntosResponse.class);
+
+        if (respuesta == null
+                || !usuarioId.equals(respuesta.getUsuarioId())
+                || !codigoOperacion.equals(
+                respuesta.getCodigoOperacion())
+                || !Integer.valueOf(puntos).equals(
+                respuesta.getPuntos())
+                || !motivo.equals(respuesta.getMotivo())
+                || respuesta.getSaldoActual() == null) {
+
+            throw new RestClientException(
+                    "Respuesta inválida de la operación de puntos"
+            );
         }
+
+        return respuesta;
     }
 }

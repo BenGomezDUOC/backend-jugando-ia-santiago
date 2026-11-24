@@ -7,6 +7,16 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface VideoRegistradoRepository extends JpaRepository<VideoRegistrado, Long> {
+public interface VideoRegistradoRepository
+        extends JpaRepository<VideoRegistrado, Long> {
+
     List<VideoRegistrado> findByContenidoId(Long contenidoId);
+
+    boolean existsByContenidoId(Long contenidoId);
+
+    List<VideoRegistrado> findByUrlMiniatura(
+            String urlMiniatura
+    );
+
+    List<VideoRegistrado> findByUrlVideo(String urlVideo);
 }

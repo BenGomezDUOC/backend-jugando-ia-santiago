@@ -1,53 +1,152 @@
 package cl.triskeledu.localizaciones.config;
 
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
+
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
 import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
+@Slf4j
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler
+        extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errores = new HashMap<>();
-        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
-            errores.put(error.getField(), error.getDefaultMessage());
-        }
+    // Errores de validación.
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request
+    ) {
 
-        Map<String, Object> respuesta = new HashMap<>();
+        Map<String, String> errores = new LinkedHashMap<>();
+
+        ex.getBindingResult()
+                .getFieldErrors()
+                .forEach(error ->
+                        errores.put(
+                                error.getField(),
+                                error.getDefaultMessage()
+                        )
+                );
+
+        Map<String, Object> respuesta = new LinkedHashMap<>();
+
         respuesta.put("timestamp", LocalDateTime.now());
-        respuesta.put("status", HttpStatus.BAD_REQUEST.value());
-        respuesta.put("error", "Error de Validación");
+        respuesta.put("status", 400);
+        respuesta.put("mensaje", "Error de validación");
         respuesta.put("detalles", errores);
 
         return ResponseEntity.badRequest().body(respuesta);
     }
 
+    // Errores de las reglas de negocio.
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<Map<String, Object>> handleIllegalArgument(IllegalArgumentException ex) {
-        Map<String, Object> respuesta = new HashMap<>();
-        respuesta.put("timestamp", LocalDateTime.now());
-        respuesta.put("status", HttpStatus.BAD_REQUEST.value());
-        respuesta.put("mensaje", ex.getMessage());
+    public ResponseEntity<Map<String, Object>>
+    handleIllegalArgument(IllegalArgumentException ex) {
 
-        return ResponseEntity.badRequest().body(respuesta);
+        return crearRespuesta(
+                HttpStatus.BAD_REQUEST,
+                ex.getMessage()
+        );
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleAllExceptions(Exception ex) {
-        Map<String, Object> respuesta = new HashMap<>();
-        respuesta.put("timestamp", LocalDateTime.now());
-        respuesta.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-        respuesta.put("mensaje", "Ocurrió un error inesperado en el servidor");
-        respuesta.put("detalle", ex.getMessage());
+    // Conflictos con restricciones de MySQL.
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, Object>>
+    handleDataIntegrity(DataIntegrityViolationException ex) {
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(respuesta);
+        return crearRespuesta(
+                HttpStatus.CONFLICT,
+                "La operación entra en conflicto con un registro existente"
+        );
+    }
+
+    // Conservar los códigos HTTP correspondientes.
+    @Override
+    protected ResponseEntity<Object> handleExceptionInternal(
+            Exception ex,
+            Object body,
+            HttpHeaders headers,
+            HttpStatusCode statusCode,
+            WebRequest request
+    ) {
+
+        if (ex instanceof ResponseStatusException error) {
+
+            Map<String, Object> respuesta =
+                    new LinkedHashMap<>();
+
+            respuesta.put("timestamp", LocalDateTime.now());
+            respuesta.put("status", statusCode.value());
+            respuesta.put(
+                    "mensaje",
+                    error.getReason() != null
+                            ? error.getReason()
+                            : "Solicitud rechazada"
+            );
+
+            return super.handleExceptionInternal(
+                    ex,
+                    respuesta,
+                    headers,
+                    statusCode,
+                    request
+            );
+        }
+
+        return super.handleExceptionInternal(
+                ex,
+                body,
+                headers,
+                statusCode,
+                request
+        );
+    }
+
+    // Errores inesperados.
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, Object>>
+    handleAllExceptions(Exception ex) {
+
+        log.error(
+                "Error interno en ms-localizaciones: {}",
+                ex.getClass().getSimpleName()
+        );
+
+        return crearRespuesta(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Ocurrió un error inesperado en el servidor"
+        );
+    }
+
+    private ResponseEntity<Map<String, Object>>
+    crearRespuesta(HttpStatus estado, String mensaje) {
+
+        Map<String, Object> respuesta = new LinkedHashMap<>();
+
+        respuesta.put("timestamp", LocalDateTime.now());
+        respuesta.put("status", estado.value());
+        respuesta.put("error", estado.getReasonPhrase());
+        respuesta.put("mensaje", mensaje);
+
+        return ResponseEntity
+                .status(estado)
+                .body(respuesta);
     }
 }
