@@ -39,12 +39,11 @@ Arquitectura de **3 microservicios independientes** con **Spring Boot 3 (Java 21
 
 ### 1. `ms-clientes` (Puerto `8081`)
 * **Base de Datos:** `bd_triskeledu_clientes`
-* **Compatibilidad de DTOs:** Admite indistintamente la nomenclatura estándar y la nomenclatura de Android (`nombre`/`nombreCompleto`, `correo`/`correoElectronico`, `avatar`/`avatarSeleccionado`, `institucion`, `rol` `CLIENTE`/`ESTUDIANTE`/`ADMINISTRADOR`/`GENERADOR`).
+* **Compatibilidad de DTOs:** Admite indistintamente la nomenclatura estándar y la nomenclatura de Android (`nombre`/`nombreCompleto`, `correo`/`correoElectronico`, `avatar`/`avatarSeleccionado`, `institucion`, `rol` `CLIENTE`/`ADMINISTRADOR`/`GENERADOR`).
 * **Criptografía:** Algoritmo PBKDF2 compatible con Android.
 * **Cuentas Precargadas:**
   * Admin: `admin@triskeledu.cl` / `123`
   * Generador: `contenido@triskeledu.cl` / `123`
-  * Estudiante/Cliente Demo: `estudiante@triskeledu.cl` / `123`
 * **Endpoints:**
   * `POST /api/clientes/usuarios/registro` : Registro de usuario
   * `POST /api/clientes/usuarios/login` : Login seguro con PBKDF2
@@ -59,7 +58,6 @@ Arquitectura de **3 microservicios independientes** con **Spring Boot 3 (Java 21
 * **Reglas de Negocio Implementadas:**
   * **QR Nuevo (+10 pts):** Valida que el código QR pertenezca al punto turístico seleccionado (`puntoIdSeleccionado`) y que la cápsula esté en estado `PUBLICADA`. Si ya fue descubierto, no suma puntos repetidos (+0 pts).
   * **Selfie en Terreno (+100 pts):** Valida que la fotografía de evidencia sea obligatoria. Se bonifica una vez por cápsula/QR específico (`(usuarioId, capsulaId)`), permitiendo completar diferentes cápsulas del mismo punto turístico.
-  * **Catálogo de Premios:** Endpoint `GET /api/premios` compatible con `PremiosApiService` de Retrofit (`PremioDto`: `id`, `nombre`, `descripcion`, `puntosRequeridos`, `stockDisponible`, `imagenUrl`). Permite canje con deducción de saldo y notificación.
 * **Endpoints:**
   * `GET /api/premios` : Catálogo de premios físicos disponibles para canje
   * `GET /api/premios/{id}` : Detalle de un premio
@@ -68,15 +66,12 @@ Arquitectura de **3 microservicios independientes** con **Spring Boot 3 (Java 21
   * `POST /api/premios/gamificacion/visita-selfie` : Registrar selfie (+100 pts)
   * `POST /api/premios/gamificacion/video-visto` : Registrar visualización de video
   * `GET /api/premios/gamificacion/descubrimientos/{usuarioId}` : Historial de QR descubiertos
-  * `GET /api/premios/gamificacion/visitas/{usuarioId}` : Historial de visitas y selfies
-  * `GET /api/premios/notificaciones/usuario/{usuarioId}` : Notificaciones del jugador
-  * `PUT /api/premios/notificaciones/{id}/leer` : Marcar notificación leída
 
 ---
 
 ### 3. `ms-localizaciones` (Puerto `8083`)
 * **Base de Datos:** `bd_triskeledu_localizaciones`
-* **Puntos Turísticos (8 POIs Oficiales sincronizados con Android):**
+* **Puntos Turísticos:** Se incluyen 8 puntos turísticos iniciales y se permite agregar, editar y eliminar nuevos puntos desde la aplicación Android.
   1. Plaza de Armas (`QR_PLAZA_ARMAS`)
   2. Cerro Santa Lucía (`QR_SANTA_LUCIA`)
   3. Cerro San Cristóbal (`QR_SAN_CRISTOBAL`)
@@ -88,6 +83,8 @@ Arquitectura de **3 microservicios independientes** con **Spring Boot 3 (Java 21
 * **Atributos de POI:** Incluye `direccion`, `codigo`, `qrEsperado`, `puntosRecompensa`, `radioToleranciaMetros`, `altitud`, `latitud`, `longitud`.
 * **Cápsulas Educativas:** Las 6 cápsulas oficiales de IA creadas por el equipo (IA, Visión Artificial, Medioambiente, Machine Learning, Redes Neuronales, IA Generativa) más cápsulas para Bellas Artes y Museo de la Memoria.
 * **Gestión de Contenido:** Soporta CRUD completo de `ContenidoEducativo` y `VideoRegistrado` para el Administrador y Generador de Contenido.
+* **Edición de Contenidos con QR:** Permite modificar el título, la descripción y la categoría de un contenido publicado con QR, sin cambiar el punto turístico asociado.
+* **Validaciones:** Impide eliminar puntos turísticos que tengan contenidos o cápsulas asociados.
 * **Endpoints:**
   * `GET /api/localizaciones/puntos-interes` (y alias `/api/localizaciones/puntos`)
   * `GET /api/localizaciones/puntos-interes/{id}`
@@ -102,11 +99,22 @@ Arquitectura de **3 microservicios independientes** con **Spring Boot 3 (Java 21
 
 ---
 
+## 🔐 Seguridad e Integración
+
+* Autenticación mediante JWT.
+* Control de acceso según los roles ADMINISTRADOR, GENERADOR y CLIENTE.
+* Validaciones de permisos para gestionar usuarios, puntos turísticos y contenidos educativos.
+* Comunicación entre microservicios mediante servicios REST.
+* Contraseñas de MySQL, claves JWT y claves internas configuradas mediante variables de entorno.
+
+---
+
 ## 🚀 Requisitos y Ejecución
 
 ### Prerrequisitos
 1. **Java JDK 21 LTS**.
 2. **Servidor MySQL** activo en `localhost:3306`.
+3. Configurar las variables de entorno necesarias para las conexiones MySQL, autenticación JWT y comunicación interna entre microservicios.
 
 ### Compilar Todo el Proyecto
 ```powershell
