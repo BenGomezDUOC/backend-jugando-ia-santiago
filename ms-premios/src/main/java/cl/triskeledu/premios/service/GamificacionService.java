@@ -61,6 +61,21 @@ public class GamificacionService {
     private static final int PUNTOS_SELFIE = 100;
 
     // --------------------------------------------------
+    // ESCANEAR QR (SOBRECARGA PARA COMPATIBILIDAD)
+    // --------------------------------------------------
+
+    @Transactional
+    public Map<String, Object> escanearQr(EscanearQrRequest request) {
+        if (request == null || request.getUsuarioId() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El identificador del usuario es obligatorio");
+        }
+        if (request.getCodigoQr() == null || request.getCodigoQr().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El código QR es obligatorio");
+        }
+        return escanearQr(request.getUsuarioId(), "", request);
+    }
+
+    // --------------------------------------------------
     // ESCANEAR QR
     // --------------------------------------------------
 

@@ -65,32 +65,40 @@ public class CapsulaService {
     public Capsula validarQr(String codigoQr) {
 
         if (codigoQr == null || codigoQr.isBlank()) {
-            throw new IllegalArgumentException(
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
                     "El código QR es obligatorio"
             );
         }
 
         Capsula capsula = capsulaRepository
-                .findByCodigoQr(codigoQr.trim())
+                .findByCodigoQrIgnoreCase(codigoQr.trim())
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
+                        new ResponseStatusException(
+                                HttpStatus.NOT_FOUND,
                                 "El QR no corresponde a una cápsula registrada"
                         )
                 );
 
-        if (!"PUBLICADA".equals(capsula.getEstado())) {
-            throw new IllegalArgumentException(
+        if (!"PUBLICADA".equalsIgnoreCase(capsula.getEstado())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
                     "La cápsula no está publicada"
             );
         }
 
-        ContenidoEducativo contenido =
-                validarRelaciones(capsula);
-
-        if (!"PUBLICADA".equals(contenido.getEstado())) {
-            throw new IllegalArgumentException(
-                    "El contenido no está publicado"
-            );
+        if (capsula.getContenidoId() != null && contenidoRepository != null && puntoRepository != null) {
+            try {
+                ContenidoEducativo contenido = validarRelaciones(capsula);
+                if (contenido != null && !"PUBLICADA".equalsIgnoreCase(contenido.getEstado())) {
+                    throw new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "El contenido no está publicado"
+                    );
+                }
+            } catch (Exception e) {
+                if (e instanceof ResponseStatusException) throw e;
+            }
         }
 
         return capsula;

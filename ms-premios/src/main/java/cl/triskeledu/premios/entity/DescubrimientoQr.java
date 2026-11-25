@@ -26,6 +26,14 @@ public class DescubrimientoQr {
     @Column(nullable = false)
     private Long capsulaId;
 
+    @Column
+    @Builder.Default
+    private Long puntoId = null;
+
+    @Column
+    @Builder.Default
+    private Integer puntosOtorgados = 10;
+
     @Column(nullable = false)
     @Builder.Default
     private Long fechaTimestamp = System.currentTimeMillis();

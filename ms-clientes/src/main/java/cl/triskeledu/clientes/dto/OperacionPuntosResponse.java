@@ -35,6 +35,11 @@ public class OperacionPuntosResponse {
     // Saldo actual del usuario.
     private Integer saldoActual;
 
+    // Método de compatibilidad para pruebas y clientes
+    public Integer getNuevoSaldo() {
+        return saldoResultante != null ? saldoResultante : saldoActual;
+    }
+
     // Indica si la operación había sido procesada anteriormente.
     private boolean yaProcesada;
 

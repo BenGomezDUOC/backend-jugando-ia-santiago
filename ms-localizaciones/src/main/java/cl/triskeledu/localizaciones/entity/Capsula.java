@@ -28,15 +28,15 @@ public class Capsula {
     @Column(nullable = false)
     private Long puntoId;
 
-    @NotNull(message = "El contenido educativo es obligatorio")
-    @Positive
-    @Column(nullable = false)
+    @Column
     private Long contenidoId;
 
-    @NotNull(message = "El video educativo es obligatorio")
-    @Positive
-    @Column(nullable = false)
+    @Column
     private Long videoId;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer puntos = 10;
 
     @Size(max = 100)
     @Column(nullable = false, unique = true, length = 100)

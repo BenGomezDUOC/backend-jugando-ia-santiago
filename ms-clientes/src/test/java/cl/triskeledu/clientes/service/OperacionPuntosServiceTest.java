@@ -1,6 +1,7 @@
 package cl.triskeledu.clientes.service;
 
 import cl.triskeledu.clientes.dto.OperacionPuntosRequest;
+import cl.triskeledu.clientes.entity.OperacionPuntos;
 import cl.triskeledu.clientes.entity.Usuario;
 import cl.triskeledu.clientes.model.Rol;
 import cl.triskeledu.clientes.repository.OperacionPuntosRepository;
@@ -61,8 +62,9 @@ class OperacionPuntosServiceTest {
         when(usuarioRepository.findByIdForUpdate(99L)).thenReturn(Optional.empty());
 
         OperacionPuntosRequest req = new OperacionPuntosRequest();
+        req.setCodigoOperacion("QR-001");
+        req.setMotivo("QR");
         req.setPuntos(10);
-        req.setMotivo("Escaneo QR");
 
         assertThrows(IllegalArgumentException.class, () ->
                 operacionPuntosService.procesarOperacion(99L, req));
@@ -78,8 +80,9 @@ class OperacionPuntosServiceTest {
         when(usuarioRepository.findByIdForUpdate(2L)).thenReturn(Optional.of(admin));
 
         OperacionPuntosRequest req = new OperacionPuntosRequest();
+        req.setCodigoOperacion("QR-002");
+        req.setMotivo("QR");
         req.setPuntos(10);
-        req.setMotivo("Prueba");
 
         assertThrows(IllegalArgumentException.class, () ->
                 operacionPuntosService.procesarOperacion(2L, req));
@@ -90,26 +93,30 @@ class OperacionPuntosServiceTest {
     void testProcesarOperacion_sumaPuntosExitosa() {
         when(usuarioRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(usuarioCliente));
         when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(operacionPuntosRepository.saveAndFlush(any(OperacionPuntos.class))).thenAnswer(inv -> inv.getArgument(0));
 
         OperacionPuntosRequest req = new OperacionPuntosRequest();
+        req.setCodigoOperacion("QR-003");
+        req.setMotivo("QR");
         req.setPuntos(10);
-        req.setMotivo("Descubrimiento QR");
 
         var response = operacionPuntosService.procesarOperacion(1L, req);
 
         assertNotNull(response);
         assertEquals(60, response.getNuevoSaldo());
-        verify(operacionPuntosRepository, times(1)).save(any());
+        verify(operacionPuntosRepository, times(1)).saveAndFlush(any());
     }
 
     @Test
-    @DisplayName("Rechaza deduccion si el usuario no tiene saldo suficiente")
+    @DisplayName("Rechaza deduccion si el usuario tiene saldo invalido")
     void testProcesarOperacion_saldoInsuficiente() {
+        usuarioCliente.setPuntosAcumulados(-5);
         when(usuarioRepository.findByIdForUpdate(1L)).thenReturn(Optional.of(usuarioCliente));
 
         OperacionPuntosRequest req = new OperacionPuntosRequest();
-        req.setPuntos(-100);
-        req.setMotivo("Canje premio grande");
+        req.setCodigoOperacion("QR-004");
+        req.setMotivo("QR");
+        req.setPuntos(10);
 
         assertThrows(IllegalArgumentException.class, () ->
                 operacionPuntosService.procesarOperacion(1L, req));

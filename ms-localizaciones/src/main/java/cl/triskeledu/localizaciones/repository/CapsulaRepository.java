@@ -13,6 +13,8 @@ public interface CapsulaRepository
 
     Optional<Capsula> findByCodigoQr(String codigoQr);
 
+    Optional<Capsula> findByCodigoQrIgnoreCase(String codigoQr);
+
     List<Capsula> findByPuntoId(Long puntoId);
 
     List<Capsula> findByEstado(String estado);

@@ -53,7 +53,7 @@ class PuntoInteresServiceTest {
     @Test
     @DisplayName("Obtener todos los puntos retorna la lista del repositorio")
     void testObtenerTodos_retornaLista() {
-        when(puntoInteresRepository.findAll()).thenReturn(List.of(punto));
+        when(puntoInteresRepository.findAllByOrderByNombreAsc()).thenReturn(List.of(punto));
 
         var lista = puntoInteresService.obtenerTodos();
 
