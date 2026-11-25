@@ -47,13 +47,12 @@ public class RegistroRequest {
     @JsonAlias("correoElectronico")
     private String correo;
 
-    // Número de teléfono obligatorio.
-    @NotBlank(message = "El teléfono es obligatorio")
+    // Número de teléfono opcional.
     @Pattern(
-            regexp = "^[0-9]{8,15}$",
+            regexp = "^$|^[0-9]{8,15}$",
             message = "El teléfono debe contener entre 8 y 15 dígitos"
     )
-    private String telefono;
+    private String telefono = "";
 
     // Dirección opcional.
     @Builder.Default
@@ -73,8 +72,8 @@ public class RegistroRequest {
     // Contraseña del cliente.
     @NotBlank(message = "La contraseña es obligatoria")
     @Size(
-            min = 8,
-            message = "La contraseña debe tener al menos 8 caracteres"
+            min = 3,
+            message = "La contraseña debe tener al menos 3 caracteres"
     )
     private String contrasena;
 

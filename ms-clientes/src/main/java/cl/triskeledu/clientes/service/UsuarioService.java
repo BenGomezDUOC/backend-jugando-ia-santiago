@@ -77,12 +77,12 @@ public class UsuarioService {
         // Validar contraseña.
         validarContrasenaNueva(request.getContrasena());
 
-        // Validar teléfono.
+        // Validar teléfono (opcional).
         String telefono = limpiarTexto(
                 request.getTelefono()
         );
 
-        if (!telefono.matches("^[0-9]{8,15}$")) {
+        if (!telefono.isEmpty() && !telefono.matches("^[0-9]{8,15}$")) {
 
             throw new IllegalArgumentException(
                     "El teléfono debe contener entre 8 y 15 dígitos"
@@ -428,10 +428,10 @@ public class UsuarioService {
 
         if (contrasena == null
                 || contrasena.isBlank()
-                || contrasena.length() < 8) {
+                || contrasena.length() < 3) {
 
             throw new IllegalArgumentException(
-                    "La contraseña debe tener al menos 8 caracteres"
+                    "La contraseña debe tener al menos 3 caracteres"
             );
         }
     }
