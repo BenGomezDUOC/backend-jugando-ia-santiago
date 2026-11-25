@@ -9,6 +9,14 @@ Write-Host "NOTA: Tu otro proyecto en el puerto 8080 no se vera afectado."
 Write-Host "Requiere MySQL iniciado en el puerto 3306."
 Write-Host ""
 
+$adbPath = "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe"
+if (Test-Path $adbPath) {
+    Write-Host "Configurando puente ADB (adb reverse) para celular fisico..." -ForegroundColor Gray
+    & $adbPath reverse tcp:8081 tcp:8081 2>$null
+    & $adbPath reverse tcp:8082 tcp:8082 2>$null
+    & $adbPath reverse tcp:8083 tcp:8083 2>$null
+}
+
 $dir = $PSScriptRoot
 
 Write-Host "[1/3] Levantando ms-clientes (8081)..." -ForegroundColor White

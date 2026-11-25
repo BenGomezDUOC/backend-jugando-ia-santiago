@@ -18,6 +18,14 @@ echo.
 set DIR=%~dp0
 cd /d "%DIR%"
 
+rem Puente ADB para celulares fisicos (si hay uno conectado)
+if exist "%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe" (
+    echo Configurando puente ADB para celular fisico...
+    "%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe" reverse tcp:8081 tcp:8081 >nul 2>nul
+    "%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe" reverse tcp:8082 tcp:8082 >nul 2>nul
+    "%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe" reverse tcp:8083 tcp:8083 >nul 2>nul
+)
+
 echo [1/3] Levantando ms-clientes en puerto 8081...
 start "ms-clientes (8081)" cmd /k "cd /d "%DIR%" && java -jar ms-clientes\target\ms-clientes-1.0.0-SNAPSHOT.jar"
 
