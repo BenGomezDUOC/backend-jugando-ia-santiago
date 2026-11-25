@@ -109,11 +109,11 @@ public class DataSeeder implements CommandLineRunner {
         // Validar la contraseña inicial.
         if (contrasena == null
                 || contrasena.isBlank()
-                || contrasena.length() < 8) {
+                || contrasena.length() < 3) {
 
             throw new IllegalStateException(
                     "Debes configurar una contraseña inicial "
-                            + "de al menos 8 caracteres para "
+                            + "de al menos 3 caracteres para "
                             + tipoCuentaSistema
             );
         }
