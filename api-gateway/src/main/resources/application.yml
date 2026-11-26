@@ -6,10 +6,6 @@ spring:
     name: api-gateway
   cloud:
     gateway:
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: true
       globalcors:
         cors-configurations:
           '[/**]':
@@ -22,21 +18,18 @@ spring:
               - OPTIONS
             allowedHeaders: "*"
       routes:
-        # Enrutamiento hacia ms-clientes
         - id: ms-clientes-route
-          uri: lb://ms-clientes
+          uri: http://localhost:8081
           predicates:
             - Path=/api/clientes/**
 
-        # Enrutamiento hacia ms-premios
         - id: ms-premios-route
-          uri: lb://ms-premios
+          uri: http://localhost:8082
           predicates:
             - Path=/api/premios/**
 
-        # Enrutamiento hacia ms-localizaciones
         - id: ms-localizaciones-route
-          uri: lb://ms-localizaciones
+          uri: http://localhost:8083
           predicates:
             - Path=/api/localizaciones/**
 

@@ -51,8 +51,8 @@ public class Usuario {
 
     // Número de teléfono.
     @Pattern(
-            regexp = "^([0-9]{8,15})?$",
-            message = "El teléfono debe contener entre 8 y 15 dígitos"
+            regexp = "^$|^[+]?[0-9\\s-]{8,20}$",
+            message = "El teléfono debe contener entre 8 y 20 dígitos o caracteres válidos"
     )
     @Column(length = 20)
     @Builder.Default

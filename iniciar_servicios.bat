@@ -23,22 +23,22 @@ cd /d "%DIR%"
 echo [1/5] Levantando Eureka Server (8761)...
 start "Eureka Server (8761)" cmd /k "cd /d "%DIR%" && java -jar eureka-server\target\eureka-server-1.0.0-SNAPSHOT.jar"
 
-timeout /t 5 >nul
+ping 127.0.0.1 -n 6 >nul
 
 echo [2/5] Levantando ms-clientes (8081)...
 start "ms-clientes (8081)" cmd /k "cd /d "%DIR%" && java -jar ms-clientes\target\ms-clientes-1.0.0-SNAPSHOT.jar"
 
-timeout /t 3 >nul
+ping 127.0.0.1 -n 4 >nul
 
 echo [3/5] Levantando ms-localizaciones (8083)...
 start "ms-localizaciones (8083)" cmd /k "cd /d "%DIR%" && java -jar ms-localizaciones\target\ms-localizaciones-1.0.0-SNAPSHOT.jar"
 
-timeout /t 3 >nul
+ping 127.0.0.1 -n 4 >nul
 
 echo [4/5] Levantando ms-premios (8082)...
 start "ms-premios (8082)" cmd /k "cd /d "%DIR%" && java -jar ms-premios\target\ms-premios-1.0.0-SNAPSHOT.jar"
 
-timeout /t 3 >nul
+ping 127.0.0.1 -n 4 >nul
 
 echo [5/5] Levantando API Gateway (8080)...
 start "API Gateway (8080)" cmd /k "cd /d "%DIR%" && java -jar api-gateway\target\api-gateway-1.0.0-SNAPSHOT.jar"

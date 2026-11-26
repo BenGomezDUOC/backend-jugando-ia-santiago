@@ -49,7 +49,7 @@ public class RegistroRequest {
 
     // Número de teléfono opcional.
     @Pattern(
-            regexp = "^$|^[0-9]{8,15}$",
+            regexp = "^$|^[+]?[0-9\\s-]{8,20}$",
             message = "El teléfono debe contener entre 8 y 15 dígitos"
     )
     private String telefono = "";

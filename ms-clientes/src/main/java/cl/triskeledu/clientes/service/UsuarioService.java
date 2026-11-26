@@ -82,7 +82,7 @@ public class UsuarioService {
                 request.getTelefono()
         );
 
-        if (!telefono.isEmpty() && !telefono.matches("^[0-9]{8,15}$")) {
+        if (!telefono.isEmpty() && !telefono.matches("^[+]?[0-9\\s-]{8,20}$")) {
 
             throw new IllegalArgumentException(
                     "El teléfono debe contener entre 8 y 15 dígitos"
