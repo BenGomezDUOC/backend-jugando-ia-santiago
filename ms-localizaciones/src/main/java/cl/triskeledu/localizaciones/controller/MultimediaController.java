@@ -77,16 +77,18 @@ public class MultimediaController {
             @PathVariable("nombre") String nombre
     ) {
 
-        Long usuarioId = UsuarioAutenticado.obtenerId(jwt);
+        Long usuarioId = jwt != null ? UsuarioAutenticado.obtenerId(jwt) : null;
 
         String referencia =
                 "/api/localizaciones/multimedia/" + nombre;
 
         boolean autorizado =
-                UsuarioAutenticado.esAdministrador(jwt)
+                // Archivo público de imagen o miniatura de puntos turísticos
+                nombre.endsWith(".jpg") || nombre.endsWith(".png") || nombre.endsWith(".jpeg") || nombre.endsWith(".webp")
+                        || (jwt != null && UsuarioAutenticado.esAdministrador(jwt))
 
                         // Archivo propio.
-                        || nombre.startsWith(usuarioId + "-")
+                        || (usuarioId != null && nombre.startsWith(usuarioId + "-"))
 
                         // Imagen de un punto turístico.
                         || puntoRepository.existsByImagenUri(referencia)

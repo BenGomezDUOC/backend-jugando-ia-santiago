@@ -173,6 +173,7 @@ public class DataSeeder implements CommandLineRunner {
     ) {
 
         // 1. Guardar el punto turístico.
+        String imagenPunto = "/api/localizaciones/multimedia/" + recursoMiniatura.replace("miniatura_", "") + ".jpg";
 
         PuntoInteres punto = PuntoInteres.builder()
                 .codigo(codigoPunto)
@@ -186,6 +187,7 @@ public class DataSeeder implements CommandLineRunner {
                 .completado(false)
                 .puntosRecompensa(100)
                 .qrEsperado("")
+                .imagenUri(imagenPunto)
                 .build();
 
         punto = puntoInteresRepository.saveAndFlush(punto);
@@ -205,13 +207,13 @@ public class DataSeeder implements CommandLineRunner {
 
         contenido = contenidoRepository.saveAndFlush(contenido);
 
-        // 3. Registrar el video original de Android.
+        // 3. Registrar el video original de Android y miniatura HTTP.
 
         String urlVideo =
                 RECURSOS_ANDROID + "raw/" + recursoVideo;
 
         String urlMiniatura =
-                RECURSOS_ANDROID + "drawable/" + recursoMiniatura;
+                "/api/localizaciones/multimedia/" + recursoMiniatura + ".jpg";
 
         VideoRegistrado video = VideoRegistrado.builder()
                 .titulo(tituloContenido)

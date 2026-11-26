@@ -326,13 +326,9 @@ public class SecurityConfig {
 
                         .requestMatchers(
                                 HttpMethod.GET,
-                                "/api/localizaciones/multimedia/{nombre}"
+                                "/api/localizaciones/multimedia/**"
                         )
-                        .hasAnyRole(
-                                "CLIENTE",
-                                "ADMINISTRADOR",
-                                "GENERADOR"
-                        )
+                        .permitAll()
 
                         // ------------------------------------------
                         // BLOQUEAR LAS DEMÁS SOLICITUDES

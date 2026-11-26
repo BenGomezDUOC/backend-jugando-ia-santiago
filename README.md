@@ -1,134 +1,168 @@
-# Backend Triskeledu - Aprendo con IA en Santiago (Microservicios)
+# Aprendo IA Jugando en Santiago 🏙️🤖
 
-Arquitectura de **3 microservicios independientes** con **Spring Boot 3 (Java 21)** y persistencia de datos relacional en **MySQL (Database-per-Service pattern)** para el ecosistema educativo y gamificado de la aplicación móvil *Aprendo con IA en Santiago*.
-
----
-
-## 🏛️ Arquitectura de Microservicios
-
-```
-                                 ┌──────────────────────────────────────────────┐
-                                 │            Aplicación Android                │
-                                 │        (Aprendo con IA en Santiago)          │
-                                 └───────────────┬──────────────────────────────┘
-                                                 │
-                   ┌─────────────────────────────┼─────────────────────────────┐
-                   │ (HTTP / JSON)               │ (HTTP / JSON)               │ (HTTP / JSON)
-                   ▼                             ▼                             ▼
-       ┌───────────────────────┐     ┌───────────────────────┐     ┌───────────────────────┐
-       │      ms-clientes      │     │      ms-premios       │     │   ms-localizaciones   │
-       │     (Puerto 8081)     │     │     (Puerto 8082)     │     │     (Puerto 8083)     │
-       │                       │     │                       │     │                       │
-       │ • Gestión de Clientes │◀────│ • Gamificación        │────▶│ • 8 Puntos de Interés │
-       │ • Cuentas y Roles     │REST │ • Escaneo QR (+10 pts)│REST │ • Cápsulas de IA      │
-       │ • PBKDF2 Criptografía │     │ • Selfies (+100 pts)  │     │ • Contenido Educativo │
-       │ • Puntos Acumulados   │     │ • Catálogo de Premios │     │ • Videos Registrados  │
-       │ • DTOs Flexibles      │     │ • Notificaciones Push │     │ • Validación QR y POI │
-       └───────────┬───────────┘     └───────────┬───────────┘     └───────────┬───────────┘
-                   │                             │                             │
-                   ▼                             ▼                             ▼
-       ┌───────────────────────┐     ┌───────────────────────┐     ┌───────────────────────┐
-       │      MySQL DB:        │     │      MySQL DB:        │     │      MySQL DB:        │
-       │ bd_triskeledu_clientes│     │  bd_triskeledu_premios│     │bd_triskeledu_localiz. │
-       └───────────────────────┘     └───────────────────────┘     └───────────────────────┘
-```
+Plataforma móvil gamificada, georreferenciada y basada en microservicios para la democratización del aprendizaje de conceptos de Inteligencia Artificial en entornos urbanos cotidianos, desarrollada para **Triskeledu SpA** en el marco del **Examen Final Transversal (EFT)** de la carrera de Informática en Duoc UC.
 
 ---
 
-## 📦 Detalle de los Microservicios
-
-### 1. `ms-clientes` (Puerto `8081`)
-* **Base de Datos:** `bd_triskeledu_clientes`
-* **Compatibilidad de DTOs:** Admite indistintamente la nomenclatura estándar y la nomenclatura de Android (`nombre`/`nombreCompleto`, `correo`/`correoElectronico`, `avatar`/`avatarSeleccionado`, `institucion`, `rol` `CLIENTE`/`ADMINISTRADOR`/`GENERADOR`).
-* **Criptografía:** Algoritmo PBKDF2 compatible con Android.
-* **Cuentas Precargadas:**
-  * Admin: `admin@triskeledu.cl` / `123`
-  * Generador: `contenido@triskeledu.cl` / `123`
-* **Endpoints:**
-  * `POST /api/clientes/usuarios/registro` : Registro de usuario
-  * `POST /api/clientes/usuarios/login` : Login seguro con PBKDF2
-  * `GET /api/clientes/usuarios/{id}` : Perfil de usuario con `nivelActual` calculado
-  * `PUT /api/clientes/usuarios/{id}/perfil` : Actualización de perfil
-  * `PUT /api/clientes/usuarios/{id}/sumar-puntos?puntos={pts}` : Suma o deducción de puntos
+## 1. Nombre del Proyecto
+**Aprendo IA Jugando en Santiago** (*Plataforma Móvil Gamificada con Microservicios y Geolocalización*)
 
 ---
 
-### 2. `ms-premios` (Puerto `8082`)
-* **Base de Datos:** `bd_triskeledu_premios`
-* **Reglas de Negocio Implementadas:**
-  * **QR Nuevo (+10 pts):** Valida que el código QR pertenezca al punto turístico seleccionado (`puntoIdSeleccionado`) y que la cápsula esté en estado `PUBLICADA`. Si ya fue descubierto, no suma puntos repetidos (+0 pts).
-  * **Selfie en Terreno (+100 pts):** Valida que la fotografía de evidencia sea obligatoria. Se bonifica una vez por cápsula/QR específico (`(usuarioId, capsulaId)`), permitiendo completar diferentes cápsulas del mismo punto turístico.
-* **Endpoints:**
-  * `GET /api/premios` : Catálogo de premios físicos disponibles para canje
-  * `GET /api/premios/{id}` : Detalle de un premio
-  * `POST /api/premios/canjear?usuarioId={id}&premioId={id}` : Canjear premio
-  * `POST /api/premios/gamificacion/escanear-qr` : Escanear QR (+10 pts)
-  * `POST /api/premios/gamificacion/visita-selfie` : Registrar selfie (+100 pts)
-  * `POST /api/premios/gamificacion/video-visto` : Registrar visualización de video
-  * `GET /api/premios/gamificacion/descubrimientos/{usuarioId}` : Historial de QR descubiertos
+## 2. Integrantes del Equipo
+
+| Integrante | Rol en el Proyecto | Responsabilidades y Aportes Técnicos Principales |
+| :--- | :--- | :--- |
+| **Fernando Zapata** | **Líder de Arquitectura y Microservicios** | Diseño e implementación de **Spring Cloud API Gateway** (8080), **Netflix Eureka Server** (8761), módulo de GPS en tiempo real con **Google Play Services Location** (`FusedLocationProviderClient`), validación de proximidad a monumentos y consumo de API meteorológica externa. |
+| **Benjamín Gómez** | **Persistencia y Transacciones** | Arquitectura de base de datos relacional MySQL (patrón Database-per-Service), persistencia local con **Room SQLite** en Android, implementación del patrón Repositorio y control transaccional de saldo de puntos. |
+| **Magdiel Reynoso** | **Hardware y Seguridad** | Módulo de hardware con **CameraX**, escaneo nativo de códigos QR físicos, captura y validación de selfies turísticas en terreno, y algoritmo de seguridad PBKDF2 con sal individual. |
+| **Juan Pablo Taulis** | **Gamificación y Multimedia** | Reproducción de cápsulas educativas audiovisuales sobre IA, sistema de puntuación acumulativa y niveles, canal de notificaciones emergentes del sistema y catálogo de recompensas. |
 
 ---
 
-### 3. `ms-localizaciones` (Puerto `8083`)
-* **Base de Datos:** `bd_triskeledu_localizaciones`
-* **Puntos Turísticos:** Se incluyen 8 puntos turísticos iniciales y se permite agregar, editar y eliminar nuevos puntos desde la aplicación Android.
-  1. Plaza de Armas (`QR_PLAZA_ARMAS`)
-  2. Cerro Santa Lucía (`QR_SANTA_LUCIA`)
-  3. Cerro San Cristóbal (`QR_SAN_CRISTOBAL`)
-  4. Palacio de La Moneda (`QR_LA_MONEDA`)
-  5. Parque Forestal (`QR_PARQUE_FORESTAL`)
-  6. Barrio Bellavista (`QR_BELLAVISTA`)
-  7. Museo Nacional de Bellas Artes (`QR_BELLAS_ARTES`)
-  8. Museo de la Memoria y los Derechos Humanos (`QR_MUSEO_MEMORIA`)
-* **Atributos de POI:** Incluye `direccion`, `codigo`, `qrEsperado`, `puntosRecompensa`, `radioToleranciaMetros`, `altitud`, `latitud`, `longitud`.
-* **Cápsulas Educativas:** Las 6 cápsulas oficiales de IA creadas por el equipo (IA, Visión Artificial, Medioambiente, Machine Learning, Redes Neuronales, IA Generativa) más cápsulas para Bellas Artes y Museo de la Memoria.
-* **Gestión de Contenido:** Soporta CRUD completo de `ContenidoEducativo` y `VideoRegistrado` para el Administrador y Generador de Contenido.
-* **Edición de Contenidos con QR:** Permite modificar el título, la descripción y la categoría de un contenido publicado con QR, sin cambiar el punto turístico asociado.
-* **Validaciones:** Impide eliminar puntos turísticos que tengan contenidos o cápsulas asociados.
-* **Endpoints:**
-  * `GET /api/localizaciones/puntos-interes` (y alias `/api/localizaciones/puntos`)
-  * `GET /api/localizaciones/puntos-interes/{id}`
-  * `POST /api/localizaciones/puntos-interes`
-  * `PUT /api/localizaciones/puntos-interes/{id}`
-  * `DELETE /api/localizaciones/puntos-interes/{id}`
-  * `GET /api/localizaciones/capsulas`
-  * `GET /api/localizaciones/capsulas/validar-qr?codigo={codigo}`
-  * `POST /api/localizaciones/capsulas`
-  * `GET /api/localizaciones/contenidos` (CRUD contenidos)
-  * `GET /api/localizaciones/videos` (CRUD videos)
+## 3. Funcionalidades Principales
+
+### 📱 Aplicación Móvil (Android / Jetpack Compose)
+1. **Mapa Interactivo y Geolocalización en Vivo:** Visualización de marcadores de puntos de interés turístico de Santiago con cálculo de distancia en metros y tarjetas informativas.
+2. **Escaneo de Códigos QR Físicos con Cámara:** Detección automática en terreno mediante CameraX, validando que el código pertenezca a un punto turístico (+10 puntos).
+3. **Validación de Selfie en Terreno:** Captura fotográfica con almacenamiento en la galería como evidencia de visita a un hito patrimonial (+100 puntos extra).
+4. **Reproducción de Cápsulas Multimedia sobre IA:** Visualización de microaprendizajes en video clasificados por categorías (Machine Learning, Redes Neuronales, IA Generativa, Ética, Visión Artificial).
+5. **Persistencia Offline-First (Room SQLite):** Base de datos local para almacenar descubrimientos, usuarios, historial de visitas y notificaciones sin requerir conexión constante.
+6. **Formularios con Validación Estricta:** Verificación en tiempo real de correos electrónicos (RFC 5322), formato telefónico chileno (+569), nombres y contraseñas seguras.
+7. **Notificaciones Nativas del Sistema:** Alertas en barra de estado (`NotificationChannel`) ante desbloqueo de hitos y logros de gamificación.
+8. **Condiciones Meteorológicas en Tiempo Real:** Tarjeta informativa con temperatura y estado del clima en Santiago para alertar al usuario antes de salir.
+
+### ⚙️ Ecosistema Distribuido (Spring Boot 3 + Spring Cloud)
+1. **Service Discovery (Eureka Server):** Registro y resolución dinámica de microservicios sin direcciones IP cableadas.
+2. **API Gateway Centralizado:** Puerta de enlace unificada que gestiona enrutamiento inteligente, CORS y balanceo hacia los microservicios.
+3. **Servidor Multimedia Centralizado:** Almacenamiento y streaming de imágenes de puntos turísticos y miniaturas servidas desde el backend, optimizando el tamaño del APK.
+4. **Seguridad Criptográfica:** Algoritmo **PBKDF2WithHmacSHA512** para hashing de credenciales con prevención de ataques de temporización (`slowEquals`).
+5. **Control de Concurrencia e Idempotencia:** Prevención estricta de fraude que impide sumar puntos repetidos por el mismo código QR o selfie.
 
 ---
 
-## 🔐 Seguridad e Integración
+## 4. Endpoints Utilizados (API Externa y Microservicios)
 
-* Autenticación mediante JWT.
-* Control de acceso según los roles ADMINISTRADOR, GENERADOR y CLIENTE.
-* Validaciones de permisos para gestionar usuarios, puntos turísticos y contenidos educativos.
-* Comunicación entre microservicios mediante servicios REST.
-* Contraseñas de MySQL, claves JWT y claves internas configuradas mediante variables de entorno.
+### 🌐 API Externa (Clima en Santiago)
+* **Proveedor:** Open-Meteo Public Weather API
+* **Endpoint:** `GET https://api.open-meteo.com/v1/forecast?latitude=-33.4489&longitude=-70.6693&current_weather=true`
+* **Propósito:** Provee la temperatura actual, velocidad del viento y código meteorológico de Santiago en tiempo real.
+
+### 🚪 Spring Cloud API Gateway (Puerto `8080`)
+Punto de entrada único consumido por la aplicación móvil: `http://10.0.2.2:8080/` (emulador) o `http://127.0.0.1:8080/` (físico).
+
+#### 1. Microservicio de Clientes (`ms-clientes` vía Gateway: `/api/clientes/**`)
+* `POST /api/clientes/usuarios/registro` — Registro de nuevo jugador con validaciones estrictas y avatar.
+* `POST /api/clientes/usuarios/login` — Autenticación con verificación PBKDF2.
+* `GET /api/clientes/usuarios/{id}` — Consulta de perfil, nivel y puntos acumulados.
+* `PUT /api/clientes/usuarios/{id}/perfil` — Actualización de datos personales y avatar.
+* `PUT /api/clientes/usuarios/{id}/sumar-puntos?puntos={pts}` — Acreditación o descuento atómico de puntos.
+
+#### 2. Microservicio de Localizaciones y Multimedia (`ms-localizaciones` vía Gateway: `/api/localizaciones/**`)
+* `GET /api/localizaciones/puntos-interes` — Obtención del catálogo de los 8 puntos turísticos oficiales.
+* `GET /api/localizaciones/puntos-interes/{id}` — Detalle, coordenadas y radio de tolerancia de un monumento.
+* `POST /api/localizaciones/puntos-interes` — Creación de nuevo punto turístico por el Administrador.
+* `PUT /api/localizaciones/puntos-interes/{id}` — Edición de datos geográficos o descripción.
+* `DELETE /api/localizaciones/puntos-interes/{id}` — Eliminación protegida (bloquea borrado si tiene cápsulas activas).
+* `GET /api/localizaciones/capsulas` — Lista de cápsulas educativas de IA.
+* `GET /api/localizaciones/capsulas/validar-qr?codigo={codigo}` — Validación de existencia y estado del código QR.
+* `GET /api/localizaciones/multimedia/{nombre}` — Descarga de imágenes turísticas y miniaturas almacenadas en el backend.
+* `POST /api/localizaciones/multimedia/imagen` — Carga de nuevas fotografías de monumentos.
+
+#### 3. Microservicio de Premios y Gamificación (`ms-premios` vía Gateway: `/api/premios/**`)
+* `POST /api/premios/gamificacion/escanear-qr` — Procesa lectura QR, valida asociación al POI y suma +10 puntos.
+* `POST /api/premios/gamificacion/visita-selfie` — Registra fotografía en terreno y acredita bonificación de +100 puntos.
+* `POST /api/premios/gamificacion/video-visto` — Marca cápsula como visualizada en el historial.
+* `GET /api/premios/gamificacion/descubrimientos/{usuarioId}` — Consulta el historial de hitos descubiertos por jugador.
+* `GET /api/premios` — Consulta el catálogo de premios físicos canjeables.
+* `POST /api/premios/canjear?usuarioId={id}&premioId={id}` — Canje de recompensas por puntos.
+* `GET /api/premios/notificaciones/usuario/{usuarioId}` — Consulta el listado de notificaciones del jugador.
+* `PUT /api/premios/notificaciones/{id}/leida` — Marca una notificación como leída.
 
 ---
 
-## 🚀 Requisitos y Ejecución
+## 5. Pasos para Compilar y Ejecutar
 
-### Prerrequisitos
-1. **Java JDK 21 LTS**.
-2. **Servidor MySQL** activo en `localhost:3306`.
-3. Configurar las variables de entorno necesarias para las conexiones MySQL, autenticación JWT y comunicación interna entre microservicios.
+### Requisitos Previos
+* **Java:** JDK 21 instalado y configurado en el `PATH`.
+* **Motor de Base de Datos:** MySQL Server activo en el puerto `3306` (usuario `root`, contraseña vacía o según variable `MYSQL_PASSWORD`).
+* **Entorno Móvil:** Android Studio (Ladybug 2024.2+ o posterior) y emulador con Android 10+ (API 29+) o dispositivo físico con depuración USB.
 
-### Compilar Todo el Proyecto
-```powershell
-.\mvnw.cmd clean compile
+### Paso 1: Clonar los Repositorios
+```bash
+# Repositorio Frontend (Android):
+git clone https://github.com/BenGomezDUOC/Aprendo-IA-Jugando-en-Santiago-Grupo-Netan-Y-Yahoo.git
+
+# Repositorio Backend (Microservicios):
+git clone https://github.com/BenGomezDUOC/backend-jugando-ia-santiago.git
 ```
 
-### Ejecutar los Microservicios
-```powershell
-# Terminal 1:
-.\mvnw.cmd spring-boot:run -pl ms-clientes
+### Paso 2: Iniciar el Backend (5 Microservicios)
+1. Abre una terminal en la carpeta `backend-jugando-ia-santiago`.
+2. Ejecuta con doble clic el script automático:
+   ```cmd
+   iniciar_servicios.bat
+   ```
+   *(O en PowerShell: `.\iniciar_servicios.ps1`)*.
+3. El script compila y levanta en orden:
+   * **Eureka Server:** `http://localhost:8761`
+   * **ms-clientes:** `http://localhost:8081`
+   * **ms-localizaciones:** `http://localhost:8083`
+   * **ms-premios:** `http://localhost:8082`
+   * **API Gateway:** `http://localhost:8080`
+4. Comprueba en tu navegador que los 3 microservicios aparezcan registrados en [http://localhost:8761](http://localhost:8761).
 
-# Terminal 2:
-.\mvnw.cmd spring-boot:run -pl ms-localizaciones
+### Paso 3: Ejecutar la Aplicación Android
+1. Abre la carpeta `Aprendo-IA-Jugando-en-Santiago-Grupo-Netan-Y-Yahoo` en Android Studio.
+2. Espera la sincronización de Gradle (*Gradle Sync*).
+3. Selecciona tu dispositivo físico o emulador.
+4. Presiona **Run 'app' (Shift + F10)**.
 
-# Terminal 3:
-.\mvnw.cmd spring-boot:run -pl ms-premios
+### Paso 4: Ejecutar Pruebas Unitarias del Frontend
+En la terminal del proyecto Android:
+```bash
+./gradlew testDebugUnitTest
 ```
+*(Se ejecutan las 25 pruebas unitarias con resultado exitoso).*
+
+---
+
+## 6. Captura del APK Firmado y Llave (.jks)
+
+La aplicación ha sido empaquetada y firmada digitalmente para su distribución en producción bajo los esquemas de seguridad **v2 y v3** de Android.
+
+* **Ruta del APK firmado:** `app/build/outputs/apk/release/app-release.apk`
+* **Ruta de la llave criptográfica:** `keystore/release.jks`
+* **Alias de la llave:** `triskeledu-release`
+* **Entidad Emisora del Certificado:** `CN=Triskeledu SpA, OU=Informatica, O=Duoc UC, L=Santiago, ST=Santiago, C=CL`
+* **Algoritmo de Clave:** RSA 2048 bits / Validez 10.000 días
+* **Huella Digital SHA-256:** `b02e0ddfc6a241ef1eedcc01d07aac3ab3b363143f5e40263ea03c1b576af1f4`
+* **Comando de verificación oficial:**
+  ```cmd
+  apksigner verify --verbose --print-certs app\build\outputs\apk\release\app-release.apk
+  ```
+
+### 🖼️ Evidencia del APK Firmado y Llave .jks
+<!-- PLACEHOLDER: Guarda tu captura de pantalla de la terminal con apksigner y la carpeta keystore/ con el nombre 'apk_firmado_evidencia.png' dentro de docs/evidencias/ -->
+![Evidencia de APK Firmado y Archivo JKS](docs/evidencias/apk_firmado_evidencia.png)
+
+---
+
+## 📌 Evidencia de Trello con Planificación Distribuida
+
+El proyecto se gestionó bajo metodología ágil, dividiendo las épicas, historias de usuario y tareas técnicas entre todos los miembros del equipo:
+
+<!-- PLACEHOLDER: Guarda tu captura de pantalla de Trello con el nombre 'trello_tablero.png' dentro de docs/evidencias/ -->
+![Evidencia de Planificación en Trello](docs/evidencias/trello_tablero.png)
+
+* **Tablero Oficial:** [Acceso al Tablero Trello](https://trello.com) *(Reemplazar con enlace directo a tu tablero)*
+
+---
+
+## 🔑 Credenciales Predefinidas para Pruebas
+
+| Rol | Usuario / Alias | Correo Electrónico | Contraseña |
+| :--- | :--- | :--- | :--- |
+| **Administrador** | Administrador (`Admin`) | `admin@triskeledu.cl` | `123` |
+| **Generador de Contenido** | Contenido (`GenCont`) | `contenido@triskeledu.cl` | `123` |
+| **Cliente / Jugador** | *(Cualquier jugador registrado)* | *(Correo elegido al registrarse)* | *(Contraseña elegida)* |

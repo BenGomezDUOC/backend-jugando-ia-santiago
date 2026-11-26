@@ -1,16 +1,18 @@
 @echo off
-title Aprendo con IA en Santiago - Backend
+title Aprendo con IA en Santiago - Backend (Microservicios + Eureka + Gateway)
 cls
 echo =======================================================================
-echo   Iniciando los 3 Microservicios de Aprendo con IA en Santiago
+echo   Iniciando Arquitectura Completa de Microservicios (5 Componentes)
 echo =======================================================================
 echo.
-echo Puertos:
-echo   ms-clientes       : http://localhost:8081
-echo   ms-localizaciones : http://localhost:8083
-echo   ms-premios        : http://localhost:8082
+echo Componentes y Puertos:
+echo   1. Eureka Server   : http://localhost:8761  (Service Discovery)
+echo   2. API Gateway     : http://localhost:8080  (Puerta de Enlace Global)
+echo   3. ms-clientes     : http://localhost:8081  (Identidad y Usuarios)
+echo   4. ms-premios      : http://localhost:8082  (Gamificacion y Recompensas)
+echo   5. ms-localizaciones: http://localhost:8083 (POIs, Capsulas e Imagenes)
 echo.
-echo NOTA: Tu proyecto en puerto 8080 no se vera afectado.
+echo NOTA: La aplicacion Android se conecta directamente al API Gateway (8080).
 echo Requiere MySQL en puerto 3306.
 echo =======================================================================
 echo.
@@ -18,32 +20,33 @@ echo.
 set DIR=%~dp0
 cd /d "%DIR%"
 
-rem Puente ADB para celulares fisicos (si hay uno conectado)
-if exist "%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe" (
-    echo Configurando puente ADB para celular fisico...
-    "%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe" reverse tcp:8081 tcp:8081 >nul 2>nul
-    "%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe" reverse tcp:8082 tcp:8082 >nul 2>nul
-    "%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe" reverse tcp:8083 tcp:8083 >nul 2>nul
-)
+echo [1/5] Levantando Eureka Server (8761)...
+start "Eureka Server (8761)" cmd /k "cd /d "%DIR%" && java -jar eureka-server\target\eureka-server-1.0.0-SNAPSHOT.jar"
 
-echo [1/3] Levantando ms-clientes en puerto 8081...
+timeout /t 5 >nul
+
+echo [2/5] Levantando ms-clientes (8081)...
 start "ms-clientes (8081)" cmd /k "cd /d "%DIR%" && java -jar ms-clientes\target\ms-clientes-1.0.0-SNAPSHOT.jar"
 
 timeout /t 3 >nul
 
-echo [2/3] Levantando ms-localizaciones en puerto 8083...
+echo [3/5] Levantando ms-localizaciones (8083)...
 start "ms-localizaciones (8083)" cmd /k "cd /d "%DIR%" && java -jar ms-localizaciones\target\ms-localizaciones-1.0.0-SNAPSHOT.jar"
 
 timeout /t 3 >nul
 
-echo [3/3] Levantando ms-premios en puerto 8082...
+echo [4/5] Levantando ms-premios (8082)...
 start "ms-premios (8082)" cmd /k "cd /d "%DIR%" && java -jar ms-premios\target\ms-premios-1.0.0-SNAPSHOT.jar"
+
+timeout /t 3 >nul
+
+echo [5/5] Levantando API Gateway (8080)...
+start "API Gateway (8080)" cmd /k "cd /d "%DIR%" && java -jar api-gateway\target\api-gateway-1.0.0-SNAPSHOT.jar"
 
 echo.
 echo =======================================================================
-echo Listo. Los 3 microservicios se abrieron en ventanas independientes.
+echo Listo. Los 5 servicios se abrieron en ventanas independientes.
 echo Para detenerlos, simplemente cierra sus ventanas correspondientes.
 echo =======================================================================
 echo.
 pause
-

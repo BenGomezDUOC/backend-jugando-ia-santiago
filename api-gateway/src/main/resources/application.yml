@@ -1,0 +1,48 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+      routes:
+        # Enrutamiento hacia ms-clientes
+        - id: ms-clientes-route
+          uri: lb://ms-clientes
+          predicates:
+            - Path=/api/clientes/**
+
+        # Enrutamiento hacia ms-premios
+        - id: ms-premios-route
+          uri: lb://ms-premios
+          predicates:
+            - Path=/api/premios/**
+
+        # Enrutamiento hacia ms-localizaciones
+        - id: ms-localizaciones-route
+          uri: lb://ms-localizaciones
+          predicates:
+            - Path=/api/localizaciones/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
